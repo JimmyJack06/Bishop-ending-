@@ -1,9 +1,18 @@
 ﻿// Xiangqi.cpp : 定义控制台应用程序的入口点。
 //
 
-#include "stdafx.h"
-#include <math.h>
-#include <malloc.h>
+//#include "stdafx.h"
+#include <math.h>		//abs()
+#include <malloc.h>		//malloc()
+#include <string.h>		//strcmp()
+
+#include <algorithm>	//sort,lower_bound
+#include <vector>
+#include <iostream>
+
+#include <string>	//getline,string
+#include <sstream>	//stringstream
+using namespace std;
 
 #define DEBUG
 
@@ -198,8 +207,8 @@ bool isCheckmate(Chess &chessOri)
 		Chess tempBoard(chessOri);
 		if (tempBoard.go(DX[i], 0) && !tempBoard.isBlackLost())
 		{
-			printf("one solution: \n");
-			tempBoard.testOut();
+			printf("NO\n");
+			//tempBoard.testOut();
 			return false;
 		}
 	}
@@ -208,12 +217,12 @@ bool isCheckmate(Chess &chessOri)
 		Chess tempBoard(chessOri);
 		if (tempBoard.go(0, DY[i]) && !tempBoard.isBlackLost())
 		{
-			printf("one solution: \n");
-			tempBoard.testOut();
+			printf("NO\n");
+			//tempBoard.testOut();
 			return false;
 		}
 	}
-	printf("black is lost\n");
+	printf("YES\n");
 	return true;
 }
 
@@ -375,44 +384,42 @@ typedef struct Squares
 	//output Squares
 	void testOut(int kase)
 	{	
-		//SH
-		printf("SH\n");
-		for (int i = 0; i < n; i++)
-		{
-			for (int j = 0; j < n - 1; j++)
-			{
-				printf("%d ", SH[i * (n - 1) + j]);
-			}
-			printf("\n");
-		}
+		////SH
+		//printf("SH\n");
+		//for (int i = 0; i < n; i++)
+		//{
+		//	for (int j = 0; j < n - 1; j++)
+		//	{
+		//		printf("%d ", SH[i * (n - 1) + j]);
+		//	}
+		//	printf("\n");
+		//}
 
-		//SV
-		printf("SV\n");
-		for (int i = 0; i < n - 1; i++)
-		{
-			for (int j = 0; j < n; j++)
-			{
-				printf("%d ", SV[i * n + j]);
-			}
-			printf("\n");
-		}
+		////SV
+		//printf("SV\n");
+		//for (int i = 0; i < n - 1; i++)
+		//{
+		//	for (int j = 0; j < n; j++)
+		//	{
+		//		printf("%d ", SV[i * n + j]);
+		//	}
+		//	printf("\n");
+		//}
 
 		//answer
-		printf("Problem #%d\n\n", kase);
 		if (countSquares())
 		{
 			for (int i = 1; i < n; i++)
 			{
 				if (Size[i])
 				{
-					printf("%d squares (s) of size %d\n", Size[i], i);
+					printf("%d square (s) of size %d\n", Size[i], i);
 				}
 			}
-			printf("\n**********************\n");
 		}
 		else
 		{
-			printf("No completed squares can be found.\n\n**********************\n");
+			printf("No completed squares can be found.\n");
 		}
 	}
 
@@ -430,35 +437,634 @@ typedef struct Squares
 }Squares;
 
 
-int main()
-{	
-	//char c;
-	//scanf("%c ", &c);
-	//putchar('0');
+const int N = 20;
+typedef struct Cube
+{
+	
+	char str[N] = { 0 }, str1[N] = { 0 }, str2[N] = {0};		//init 0!!!
+	int dir[6][6] = { {0,1,2,3,4,5},{1,5,2,3,0,4},{2,1,5,0,4,3},{3,1,0,5,4,2},{4,0,2,3,5,1},{5,4,2,3,1,0} };
 
-	//					Chess				///////////////
-	//int n, bx, by;
-	//while (scanf("%d%d%d", &n, &bx, &by) && n != 0)
-	//{
-	//	Chess chess(n, bx, by);
-	//	chess.testOut();
-	//	isCheckmate(chess);
-	//}
-	///////////////////////////////////////////////////////
-
-	//					Squares				///////////////
-#ifdef DEBUG  
-	freopen("Squares.in", "r", stdin);
-#endif // DEBUG
-	int n, m, kase = 0;;
-	while (scanf("%d%d",&n,&m)!= EOF )
+	void readData()
 	{
-		kase++;
-		scanf("%d%d", &n, &m);
-		Squares squares(n, m);
-		squares.testOut(kase);
+		while (scanf("%s",str) != EOF)
+		{
+			for (int i = 0; i < 6; i++)
+				str1[i] = str[i];
+			for (int i = 0; i < 6; i++)
+				str2[i] = str[i + 6];
+			if (this->judge())
+				puts("TRUE");
+			else
+				puts("FALSE");
+		}
 	}
-	///////////////////////////////////////////////////////
 
+	bool judge()
+	{
+		char temp[N] = {0};
+		//for 6 position
+		for (int i = 0; i < 6; i++)
+		{
+			for (int j = 0; j < 6; j++)
+			{
+				temp[j] = str1[dir[i][j]];	//reset pos
+			}
+			//rotate 4 times,'0' and '5' insist
+			for (int j = 0; j < 4; j++)
+			{
+				char cha;
+				cha = temp[1];
+				temp[1] = temp[2];
+				temp[2] = temp[4];
+				temp[4] = temp[3];
+				temp[3] = cha;
+				int t = strcmp(temp, str2);
+				if (strcmp(temp, str2) == 0)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+}Cube;
+
+const int Tmax = 10000;
+typedef struct Stu
+{
+	int n;	//n students
+	int *a = (int*)malloc(n * sizeof(int));
+	int *b = (int*)malloc(n * sizeof(int));
+	int *c = (int*)malloc(n * sizeof(int));
+	int t = 1;	//cur_time
+
+	Stu(int _n):n(_n)
+	{
+		memset(a, 0, n * sizeof(int));
+		memset(b, 0, n * sizeof(int));
+		memset(c, 0, n * sizeof(int));
+		for (int i = 0; i < n;i++)
+		{
+			scanf("%d%d%d", a + i, b + i, c + i);
+		}
+		//for (int i = 0; i < n; i++)
+		//{
+		//	printf("%d %d %d\n", a[i], b[i], c[i]);
+		//}
+	}
+
+	int process()
+	{
+		for (t; t < Tmax; t++)
+		{
+			int cnt_awake = 0;
+			for (int i = 0; i < n; i++)
+			{
+				if (a[i] >= c[i])
+					cnt_awake++;
+			}
+			if (cnt_awake == n)		//success
+			{
+				return t;
+			}
+
+			//use c[i] to save new state
+			for (int i = 0; i < n; i++)
+			{
+				if (a[i] == c[i])
+				{
+					if (n - cnt_awake <= cnt_awake)
+						c[i] = 0;
+				}
+				if (c[i] == a[i] + b[i])
+					c[i] = 0;
+
+				c[i]++;
+			}
+		}
+		if (t == Tmax)
+			return -1;
+	}
+
+}Stu;
+
+
+typedef struct Pallet
+{
+	int row;
+	int col;
+}Pallet;
+typedef struct Cuboid
+{
+	int width, length, height;
+	int wl = 0, wh = 0, lh = 0;
+	Pallet *pallet = (Pallet*)malloc(sizeof(Pallet) * 6);
+	Cuboid()
+	{
+		for (int i = 0; i < 6; i++)
+		{
+			scanf("%d %d", &(pallet[i].row), &(pallet[i].col));
+			if (pallet[i].row > pallet[i].col)
+			{
+				int temp = pallet[i].row;
+				pallet[i].row = pallet[i].col;
+				pallet[i].col = temp;
+			}
+		}
+	}
+
+	bool check()
+	{
+		width = pallet[0].row;
+		length = pallet[0].col;
+		if(pallet[1].row == width)
+		return false;
+	}
+}Cuboid;
+
+//int main()
+//{	
+//	//char c;
+//	//scanf("%c ", &c);
+//	//putchar('0');
+//
+//	//		uva1589			Chess				///////////////
+//	//int n, bx, by;
+//	//while (scanf("%d%d%d", &n, &bx, &by) && n != 0)
+//	//{
+//	//	Chess chess(n, bx, by);
+//	//	//chess.testOut();
+//	//	isCheckmate(chess);
+//	//}
+//	///////////////////////////////////////////////////////
+//
+//	//			uva201		Squares				///////////////
+////#ifdef DEBUG  
+////	freopen("Squares.in", "r", stdin);
+////#endif // DEBUG
+////	int n, m, kase = 0;;
+////	while (scanf("%d%d",&n,&m)!= EOF )
+////	{
+////		if (kase) puts("\n**********************************\n");
+////		printf("Problem #%d\n\n", ++kase);
+////		Squares squares(n, m);
+////		squares.testOut(kase);
+////	}
+//	///////////////////////////////////////////////////////
+//
+//	//          uva253  Cube Painting          ///////////////  
+////#ifdef DEBUG  
+////	freopen("Cube.in", "r", stdin);
+////#endif // DEBUG
+////	Cube cube;
+////	cube.readData();
+//	
+//	//////////////////////////////////////////////////////////
+//
+//	//			uva12108 Extraordinarily Tired Student////////
+//#ifdef DEBUG  
+//	freopen("Student.in", "r", stdin);
+//#endif // DEBUG
+//	int n, k = 1;
+//	while (scanf("%d",&n) && n)
+//	{
+//		Stu stu(n);
+//		printf("Case %d: %d\n", k++, stu.process());
+//	}
+//	//////////////////////////////////////////////////////////
+//}
+
+//	uva 101	The blocks problem //////////////////////////////
+//typedef struct Block
+//{
+//	int n;
+//	vector < vector <int> > block;
+//	string command;
+//	string comA, comB;
+//	int a, b;
+//	
+//	bool readData()
+//	{
+//		getline(cin, command);
+//		if (command.compare("quit") == 0)
+//			return false;
+//		stringstream ss(command);
+//		ss >> comA >> a >> comB >> b;
+//		return true;
+//	}
+//
+//	void init()
+//	{
+//		scanf("%d", &n);
+//		block.resize(n);
+//		for (int i = 0; i < n; i++)
+//		{	
+//			block[i].push_back(i);
+//		}
+//	}
+//
+//	bool moveOnto()
+//	{
+//		int posA = block[a].front();
+//		int posB = block[b].front();
+//		//checkout
+//		for (int i = 0; i < block[posA].size(); i++)
+//		{
+//			if (block[posA][i] == b)
+//				return false;
+//		}
+//		for (int i = 0; i < block[posB].size(); i++)
+//		{
+//			if (block[posB][i] == a)
+//				return false;
+//		}
+//		//reset block[a]
+//		for (int i = block[posA].size() - 1; i >= 0; i--)
+//		{	
+//			if (block[posA][i] == a)
+//				break;
+//			//reset!!!!!!!!!!!!!
+//			block[block[posA][i]].clear();
+//			block[block[posA][i]].push_back(block[posA][i]);//0:0,1:1  ....
+//			block[posA].pop_back();
+//		}
+//		//reset block[b]
+//		for (int i = block[posB].size() - 1; i >= 0; i--)
+//		{
+//			if (block[posB][i] == b)
+//				break;
+//			//reset!!!!!!!!!!!!!
+//			block[block[posB][i]].clear();
+//			block[block[posB][i]].push_back(block[posB][i]);//0:0,1:1  ....
+//			block[posB].pop_back();
+//		}
+//		//move a onto b
+//		block[posB].push_back(a);
+//		block[posA].pop_back();
+//		
+//		//reset posA
+//		block[a].clear();
+//		block[a].push_back(posB);
+//		return true;
+//	}
+//
+//	bool moveOver()
+//	{
+//		int posA = block[a].front();
+//		int posB = block[b].front();
+//		//checkout
+//		for (int i = 0; i < block[posA].size(); i++)
+//		{
+//			if (block[posA][i] == b)
+//				return false;
+//		}
+//		for (int i = 0; i < block[posB].size(); i++)
+//		{
+//			if (block[posB][i] == a)
+//				return false;
+//		}
+//		//reset block[a]
+//		for (int i = block[posA].size() - 1; i >= 0; i--)
+//		{
+//			if (block[posA][i] == a)
+//				break;
+//			//reset!!!!!!!!!!!!!
+//			block[block[posA][i]].clear();
+//			block[block[posA][i]].push_back(block[posA][i]);//0:0,1:1  ....
+//			block[posA].pop_back();
+//		}
+//		//move a over b
+//		block[posB].push_back(a);
+//		block[posA].pop_back();
+//
+//		//reset posA
+//		block[a].clear();
+//		block[a].push_back(posB);
+//		return true;
+//	}
+//
+//	bool pileOnto()
+//	{
+//		int posA = block[a].front();
+//		int posB = block[b].front();
+//		//checkout
+//		for (int i = 0; i < block[posA].size(); i++)
+//		{
+//			if (block[posA][i] == b)
+//				return false;
+//		}
+//		for (int i = 0; i < block[posB].size(); i++)
+//		{
+//			if (block[posB][i] == a)
+//				return false;
+//		}
+//		//reset block[b]
+//		for (int i = block[posB].size() - 1; i >= 0; i--)
+//		{
+//			if (block[posB][i] == b)
+//				break;
+//			//reset!!!!!!!!!!!!!
+//			block[block[posB][i]].clear();
+//			block[block[posB][i]].push_back(block[posB][i]);//0:0,1:1  ....
+//			block[posB].pop_back();
+//		}
+//		//pile a onto b
+//		vector <int> tempVec;
+//		for (int i = block[posA].size() - 1; i >= 0; i--)
+//		{
+//			if (block[posA][i] == a)
+//			{
+//				block[posB].push_back(a);
+//				block[posA].pop_back();
+//				//reset posA
+//				block[a].clear();
+//				block[a].push_back(posB);
+//
+//				for (int i = tempVec.size() - 1; i >= 0; i--)
+//				{
+//					block[posB].push_back(tempVec[i]);
+//
+//					//reset pos !!!!!!!!!!!!!!
+//					block[tempVec[i]].clear();
+//					block[tempVec[i]].push_back(posB);
+//
+//					tempVec.pop_back();
+//				}
+//				break;
+//			}
+//			else
+//			{
+//				tempVec.push_back(block[posA][i]);
+//				block[posA].pop_back();
+//			}
+//		}
+//
+//		return true;
+//	}
+//
+//	bool pileOver()
+//	{
+//		int posA = block[a].front();
+//		int posB = block[b].front();
+//		//checkout
+//		for (int i = 0; i < block[posA].size(); i++)
+//		{
+//			if (block[posA][i] == b)
+//				return false;
+//		}
+//		for (int i = 0; i < block[posB].size(); i++)
+//		{
+//			if (block[posB][i] == a)
+//				return false;
+//		}
+//		//pile a over b
+//		vector <int> tempVec;
+//		for (int i = block[posA].size() - 1; i >= 0; i--)
+//		{
+//			if (block[posA][i] == a)
+//			{
+//				block[posB].push_back(a);
+//				block[posA].pop_back();
+//				//reset posA
+//				block[a].clear();
+//				block[a].push_back(posB);
+//
+//				for (int i = tempVec.size() - 1; i >= 0; i--)
+//				{
+//					block[posB].push_back(tempVec[i]);
+//
+//					//reset pos !!!!!!!!!!!!!!
+//					block[tempVec[i]].clear();
+//					block[tempVec[i]].push_back(posB);
+//
+//					tempVec.pop_back();
+//				}
+//				break;
+//			}
+//			else
+//			{
+//				tempVec.push_back(block[posA][i]);
+//				block[posA].pop_back();
+//			}
+//		}
+//		return true;
+//	}
+//
+//	bool process()
+//	{
+//		if (comA.compare("move") == 0)
+//		{
+//			if (comB.compare("onto") == 0)
+//			{
+//				moveOnto();
+//			}
+//			else if (comB.compare("over") == 0)
+//			{
+//				moveOver();
+//			}
+//		}
+//		else if(comA.compare("pile") == 0)
+//		{
+//			if (comB.compare("onto") == 0)
+//			{
+//				pileOnto();
+//			}
+//			else if (comB.compare("over") == 0)
+//			{
+//				pileOver();
+//			}
+//		}
+//		return true;
+//	}
+//
+//	void print()
+//	{
+//		for (int i = 0; i < n; i++)
+//		{
+//			printf("%d:", i);
+//			//clear flag
+//			if (block[i].front() != i)
+//				block[i].pop_back();
+//			for (int j = 0; j < block[i].size(); j++)
+//			{
+//				printf(" %d", block[i][j]);
+//			}
+//			printf("\n");
+//		}
+//	}
+//
+//}Block;
+//
+//int main()
+//{
+//#ifdef DEBUG  
+//	freopen("Block.in", "r", stdin);
+//#endif // DEBUG
+//	Block block1;
+//	block1.init();
+//	while (block1.readData())
+//	{
+//		block1.process();
+//	}
+//	block1.print();
+//	return 0;
+//}
+/////////////////////////////////////////////////////////////
+
+
+//	 156   Ananagrams////////////////////////////////////
+//#include <map>
+//map <string, int> cnt;		//count words times
+//vector <string> words;		//save origin words
+//
+//string stdize(const string &s)
+//{
+//	string st = s;
+//	for (int i = 0; i < st.length(); i++)
+//	{
+//		st[i] = tolower(st[i]);
+//	}
+//	sort( st.begin(), st.end() );
+//	return st;
+//}
+//
+//int main()
+//{
+//#ifdef DEBUG  
+//	freopen("Ananagrams.in", "r", stdin);
+//#endif // DEBUG
+//	string s;
+//	while (cin >> s)
+//	{
+//		if(s[0] == '#')	break;
+//		words.push_back(s);
+//		string st;
+//		st = stdize(s);	//standardize
+//		if (!cnt[st])
+//		{
+//			cnt[st]=0;
+//		}
+//		cnt[st]++;
+//	}
+//
+//	vector <string> ans;	//因为输出要按顺序所以用vector
+//	for (int i = 0; i < words.size(); i++)
+//	{
+//		if (cnt[stdize(words[i])] == 1)
+//			ans.push_back(words[i]);
+//	}
+//	sort(ans.begin(), ans.end());
+//	for (int i = 0; i < ans.size(); i++)
+//	{
+//		cout << ans[i] << endl;
+//	}
+//
+//	map<int, int> num_score;
+//	num_score[1] = 100;
+//	num_score[2] = 99;
+//	cout << num_score[1] << endl;
+//}
+////////////////////////////////////////////////////////////
+
+// 210 Concurrency Simulator	////////////////////////////
+#include <queue>
+
+const int maxn = 1000;
+int n, Q;
+int var[26], t[5],ip[maxn];
+char prog[maxn][10];
+bool lock = false;
+
+queue <int> blockQ;
+deque <int>	readyQ;
+
+void run(int pid)
+{
+	int q = Q;	//each process time occupy
+
+	while (q > 0)
+	{
+		char *p = prog[ip[pid]];
+		switch (p[2])
+		{
+		case '=':	
+			var[p[0] - 'a'] = isdigit(p[5]) ? (p[4] - '0') * 10 + p[5] - '0' : p[4] - '0';
+			q -= t[0];
+			break;
+		case 'i':	//print
+			printf("%d: %d\n", pid+1, var[p[6] - 'a']);
+			q -= t[1];
+			break;
+		case 'c':  //lock
+			if (lock)
+			{
+				blockQ.push(pid);	//hang on
+				return;
+			}
+			lock = true;
+			q -= t[2];
+			break;
+		case 'l':  //unlock
+			lock = false;
+			if (!blockQ.empty())
+			{
+				int pid2 = blockQ.front();
+				blockQ.pop();
+				readyQ.push_front(pid2);	//thrust into readyQ 1st
+			}
+			q -= t[3];
+			break;
+		case 'd':	//end
+			return;	
+
+		}
+
+		ip[pid]++;	//next command
+	}
+	readyQ.push_back(pid);
 }
 
+int main()
+{
+//#ifdef DEBUG  
+//	freopen("Concurrency.in", "r", stdin);
+//#endif // DEBUG
+
+	int T;
+	scanf("%d", &T);
+	while (T > 0)
+	{
+		scanf("%d %d %d %d %d %d %d", &n, &t[0], &t[1], &t[2], &t[3], &t[4], &Q);
+		memset(var, 0, sizeof(var));
+		getchar();
+
+		int line = 0;	//lineNo,global
+		//set commmand
+		for (int i = 0; i < n; i++)
+		{
+			fgets(prog[line], maxn, stdin);
+			ip[i] = line;
+			while (prog[line][2] != 'd')		//prog[line][0] != 'e'  wrong!!!!!!!!!!
+			{
+				line++;
+				fgets(prog[line], maxn, stdin);
+			}
+			line++;
+			readyQ.push_back(i);	//waiting line
+		}
+
+		//read commmand
+		while (!readyQ.empty())
+		{
+			int pid = readyQ.front();
+			readyQ.pop_front();
+			run(pid);
+		}
+		if (--T)
+			printf("\n");
+	}
+	return 0;
+}
+
+////////////////////////////////////////////////////////////
