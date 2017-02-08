@@ -12,6 +12,8 @@
 
 #include <string>	//getline,string
 #include <sstream>	//stringstream
+
+#include <ctime>	//clock_t,clock()
 using namespace std;
 
 #define DEBUG
@@ -968,103 +970,411 @@ typedef struct Cuboid
 ////////////////////////////////////////////////////////////
 
 // 210 Concurrency Simulator	////////////////////////////
-#include <queue>
+//#include <queue>
+//
+//const int maxn = 1000;
+//int n, Q;
+//int var[26], t[5],ip[maxn];
+//char prog[maxn][10];
+//bool lock = false;
+//
+//queue <int> blockQ;
+//deque <int>	readyQ;
+//
+//void run(int pid)
+//{
+//	int q = Q;	//each process time occupy
+//
+//	while (q > 0)
+//	{
+//		char *p = prog[ip[pid]];
+//		switch (p[2])
+//		{
+//		case '=':	
+//			var[p[0] - 'a'] = isdigit(p[5]) ? (p[4] - '0') * 10 + p[5] - '0' : p[4] - '0';
+//			q -= t[0];
+//			break;
+//		case 'i':	//print
+//			printf("%d: %d\n", pid+1, var[p[6] - 'a']);
+//			q -= t[1];
+//			break;
+//		case 'c':  //lock
+//			if (lock)
+//			{
+//				blockQ.push(pid);	//hang on
+//				return;
+//			}
+//			lock = true;
+//			q -= t[2];
+//			break;
+//		case 'l':  //unlock
+//			lock = false;
+//			if (!blockQ.empty())
+//			{
+//				int pid2 = blockQ.front();
+//				blockQ.pop();
+//				readyQ.push_front(pid2);	//thrust into readyQ 1st
+//			}
+//			q -= t[3];
+//			break;
+//		case 'd':	//end
+//			return;	
+//
+//		}
+//
+//		ip[pid]++;	//next command
+//	}
+//	readyQ.push_back(pid);
+//}
+//
+//int main()
+//{
+////#ifdef DEBUG  
+////	freopen("Concurrency.in", "r", stdin);
+////#endif // DEBUG
+//
+//	int T;
+//	scanf("%d", &T);
+//	while (T > 0)
+//	{
+//		scanf("%d %d %d %d %d %d %d", &n, &t[0], &t[1], &t[2], &t[3], &t[4], &Q);
+//		memset(var, 0, sizeof(var));
+//		getchar();
+//
+//		int line = 0;	//lineNo,global
+//		//set commmand
+//		for (int i = 0; i < n; i++)
+//		{
+//			fgets(prog[line], maxn, stdin);
+//			ip[i] = line;
+//			while (prog[line][2] != 'd')		//prog[line][0] != 'e'  wrong!!!!!!!!!!
+//			{
+//				line++;
+//				fgets(prog[line], maxn, stdin);
+//			}
+//			line++;
+//			readyQ.push_back(i);	//waiting line
+//		}
+//
+//		//read commmand
+//		while (!readyQ.empty())
+//		{
+//			int pid = readyQ.front();
+//			readyQ.pop_front();
+//			run(pid);
+//		}
+//		if (--T)
+//			printf("\n");
+//	}
+//	return 0;
+//}
+///////////////////////////////////////////////////////////
 
-const int maxn = 1000;
-int n, Q;
-int var[26], t[5],ip[maxn];
-char prog[maxn][10];
-bool lock = false;
+//	11988 Broken KeyBoard	///////////////////////////////
+//const int maxn = 100000 + 5;
+//int linkNext[maxn];
+//char s[maxn];
+//int main()
+//{
+////#ifdef DEBUG
+////	freopen("Broken_KeyBoard.in", "r", stdin);
+////#endif // DEBUG
+//	while (scanf("%s", s + 1) == 1)
+//	{
+//		memset(linkNext, 0, sizeof(linkNext));
+//		int cur = 0, last = 0;
+//		int n = strlen(s + 1);
+//		for (int i = 1; i <= n; i++)
+//		{
+//			if (s[i] == '[')	cur = 0;
+//			else if (s[i] == ']')	cur = last;
+//			else 
+//			{
+//				linkNext[i] = linkNext[cur];
+//				linkNext[cur] = i;
+//				if (cur == last)	last = i;
+//				cur = i;
+//			}
+//		}
+//
+//		for (int i = linkNext[0]; i != 0; i = linkNext[i])
+//		{
+//			printf("%c", s[i]);
+//		}
+//		printf("\n");
+//	}
+//	return 0;
+//}
+///////////////////////////////////////////////////////////
 
-queue <int> blockQ;
-deque <int>	readyQ;
+//	12657 Boxes in a line	///////////////////////////////
+//#include <algorithm>
+//const int maxn = 100000 + 5;
+//int lkRight[maxn], lkLeft[maxn];
+//
+//void linkLR(int LX, int RX)
+//{
+//	lkRight[LX] = RX;
+//	lkLeft[RX] = LX;
+//}
+//
+//int main()
+//{
+////#ifdef DEBUG
+////	freopen("Boxes_in_line.in", "r", stdin);
+////	freopen("Boxes_in_line.out", "w", stdout);
+////#endif // DEBUG
+//	
+//
+//	int kase = 1;
+//	int n, m;
+//	while (scanf("%d%d\n", &n, &m) == 2)
+//	{
+//		//printf("m = %d\n", m);
+//		//init
+//		memset(lkLeft, 0, sizeof(lkLeft));
+//		memset(lkRight, 0, sizeof(lkRight));
+//		lkRight[0] = 1;
+//		lkLeft[0] = n;
+//		for (int i = 1; i <= n; i++)
+//		{
+//			lkLeft[i] = i - 1;
+//			if(i != n)
+//				lkRight[i] = i + 1;
+//		}
+//
+//		int op, x, y;
+//		bool inv = false;
+//		for (int i = 0; i < m; i++)
+//		{
+//			scanf("%d", &op);
+//			if (op == 4)	inv = !inv;
+//			else
+//			{
+//				scanf("%d%d\n", &x, &y);
+//				//if (op == 3 && )
+//				if (op != 3  && inv)	op = 3 - op;	//for 1,2
+//				if (op == 1 && lkRight[x] == y)	continue;
+//				if(op == 2 && lkLeft[x] == y)	continue;
+//
+//				int LX = lkLeft[x], RX = lkRight[x], 
+//					LY = lkLeft[y], RY = lkRight[y];
+//				if (op == 3)
+//				{
+//					if (RX == y)
+//					{
+//						lkLeft[x] = y;
+//						lkRight[x] = RY;
+//						lkLeft[y] = LX;
+//						lkRight[y] = x;
+//						//yicuo!!!
+//						lkRight[LX] = y;
+//						lkLeft[RY] = x;
+//						//continue;		//too more		(don't break !!!!!!!!!)
+//					}
+//					else if (LX == y)
+//					{
+//						lkLeft[x] = LY;
+//						lkRight[x] = y;
+//						lkLeft[y] = x;
+//						lkRight[y] = RX;
+//						//yicuo!!!
+//						lkRight[LY] = x;
+//						lkLeft[RX] = y;
+//						//continue;
+//					}
+//					else
+//					{
+//						linkLR(LY, x); linkLR(x, RY);
+//						linkLR(LX, y); linkLR(y, RX);
+//					}
+//				}
+//				if (op == 1)
+//				{
+//					linkLR(LX, RX); linkLR(LY, x); linkLR(x, y);
+//				}
+//				if (op == 2)
+//				{
+//					linkLR(LX, RX); linkLR(y, x); linkLR(x, RY);
+//				}
+//			}
+//			//test
+//			/*if (!inv)
+//			{
+//				for (int i = lkRight[0]; i != 0; i = lkRight[i])
+//				{
+//					printf("%d ", i);
+//				}
+//				printf("\n");
+//			}
+//			else
+//			{
+//				for (int i = lkLeft[0]; i != 0; i = lkLeft[i])
+//				{
+//					printf("%d ", i);
+//				}
+//				printf("\n");
+//			}*/
+//		}
+//
+//		//output
+//		long long sum = 0;		//"int" not enough
+//		if (!inv)
+//		{
+//			int pos = 1;
+//			for (int i = lkRight[0]; i != 0; i = lkRight[i])
+//			{
+//				if (pos % 2 == 1)
+//					sum += i;
+//				pos++;
+//			}
+//		}
+//		else
+//		{
+//			int pos = 1;
+//			for (int i = lkLeft[0]; i != 0; i = lkLeft[i])
+//			{
+//				if (pos % 2 == 1)
+//					sum += i;
+//				pos++;
+//			}
+//		}
+//		printf("Case %d: %lld\n", kase++, sum);
+//	}
+//	return 0;
+//}
+///////////////////////////////////////////////////////////
 
-void run(int pid)
+// 122 trees on the level	//////////////////////////////
+#include<vector>
+#include<queue>
+const int maxn = 300;
+typedef struct Node
 {
-	int q = Q;	//each process time occupy
+	bool has_val;
+	Node *leftNode, *rightNode;
+	int value;
 
-	while (q > 0)
+}Node;
+
+bool addNode(Node *root ,int v, char *s)
+{
+	int n = strlen(s);
+	Node* curNode = root;
+	for (int i = 0; i < n; i++)		//i < n -1 ?
 	{
-		char *p = prog[ip[pid]];
-		switch (p[2])
+		if (s[i] == 'L')
 		{
-		case '=':	
-			var[p[0] - 'a'] = isdigit(p[5]) ? (p[4] - '0') * 10 + p[5] - '0' : p[4] - '0';
-			q -= t[0];
-			break;
-		case 'i':	//print
-			printf("%d: %d\n", pid+1, var[p[6] - 'a']);
-			q -= t[1];
-			break;
-		case 'c':  //lock
-			if (lock)
+			if (curNode->leftNode == NULL)
 			{
-				blockQ.push(pid);	//hang on
-				return;
+				curNode->leftNode = (Node*)malloc(sizeof(Node));
+				curNode->leftNode->has_val = false;
+				curNode->leftNode->leftNode = NULL;
+				curNode->leftNode->rightNode = NULL;
 			}
-			lock = true;
-			q -= t[2];
-			break;
-		case 'l':  //unlock
-			lock = false;
-			if (!blockQ.empty())
-			{
-				int pid2 = blockQ.front();
-				blockQ.pop();
-				readyQ.push_front(pid2);	//thrust into readyQ 1st
-			}
-			q -= t[3];
-			break;
-		case 'd':	//end
-			return;	
-
+			curNode = curNode->leftNode;
 		}
-
-		ip[pid]++;	//next command
+		else if (s[i] == 'R')
+		{
+			if (curNode->rightNode == NULL)
+			{
+				curNode->rightNode = (Node*)malloc(sizeof(Node));
+				curNode->rightNode->has_val = false;
+				curNode->rightNode->leftNode = NULL;
+				curNode->rightNode->rightNode = NULL;
+			}
+			curNode = curNode->rightNode;
+		}
 	}
-	readyQ.push_back(pid);
+	if (curNode->has_val)
+		return false;
+	curNode->value = v;
+	curNode->has_val = true;
+	return true;
+}
+
+bool readInput(Node * &root)
+{
+	root = (Node*)malloc(sizeof(Node));
+	root->has_val = false;
+	root->leftNode = NULL;
+	root->rightNode = NULL;
+	char s[maxn];
+	while (scanf("%s", s) != EOF)
+	{
+		if (strcmp(s, "()") == 0)
+			return true;
+		char *start = strchr(s, ',') + 1;
+		int v;
+		sscanf(&s[1], "%d", &v);
+		if (!addNode(root, v, start))
+			return false;
+	}
+	return false;
+}
+
+bool bfs(Node *curNode,vector <int> &ans)
+{
+	queue <Node*> q;
+	if (!curNode->has_val)
+	{
+		return false;
+	}
+	q.push(curNode);
+	while (!q.empty())
+	{
+		Node *u = q.front();
+		q.pop();
+		if (u->leftNode != NULL)
+			q.push(u->leftNode);
+		if (u->rightNode != NULL)
+			q.push(u->rightNode);
+		if (!u->has_val)
+			return false;
+		ans.push_back(u->value);
+	}
+	return true;
 }
 
 int main()
 {
-//#ifdef DEBUG  
-//	freopen("Concurrency.in", "r", stdin);
+//#ifdef DEBUG
+//	freopen("trees_on_the_level.in", "r", stdin);
+//	freopen("trees_on_the_level.out", "w", stdout);
 //#endif // DEBUG
-
-	int T;
-	scanf("%d", &T);
-	while (T > 0)
+	Node* root;
+	while (readInput(root))
 	{
-		scanf("%d %d %d %d %d %d %d", &n, &t[0], &t[1], &t[2], &t[3], &t[4], &Q);
-		memset(var, 0, sizeof(var));
-		getchar();
-
-		int line = 0;	//lineNo,global
-		//set commmand
-		for (int i = 0; i < n; i++)
+		vector <int> ans;
+		if (!bfs(root, ans))
+			printf("not complete\n");
+		else
 		{
-			fgets(prog[line], maxn, stdin);
-			ip[i] = line;
-			while (prog[line][2] != 'd')		//prog[line][0] != 'e'  wrong!!!!!!!!!!
-			{
-				line++;
-				fgets(prog[line], maxn, stdin);
-			}
-			line++;
-			readyQ.push_back(i);	//waiting line
-		}
-
-		//read commmand
-		while (!readyQ.empty())
-		{
-			int pid = readyQ.front();
-			readyQ.pop_front();
-			run(pid);
-		}
-		if (--T)
+			for (int i = 0; i < ans.size(); i++)
+				printf("%d ", ans[i]);
 			printf("\n");
+		}
 	}
 	return 0;
 }
 
-////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+//	linear solve test	//////////////////////////////////
+//#include <mkl.h>
+//float A[16] = { 2,3,11,5,1,1,5,2,2,1,3,2,1,1,3,3 };
+//float B[4] = { 2,1,-3,-2 };
+//int main()
+//{
+//	MKL_INT ipiv[4];
+//	LAPACKE_sgesv(LAPACK_ROW_MAJOR, 4, 1, A, 4, ipiv,
+//		B, 1);
+//	//LAPACKE_sgels(LAPACK_ROW_MAJOR, 'N', 4, 4, 1, A, 4, B, 1);
+//	for (int i = 0; i < 4; i++)
+//		printf("%f\n", B[i]);
+//	float c = 2 * B[0] + 3 * B[1] + 11 * B[2] + 5 * B[3];
+//	printf("%f\n", c);
+//	return 0;
+//}
+
+//////////////////////////////////////////////////////////
