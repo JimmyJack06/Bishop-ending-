@@ -1246,117 +1246,126 @@ typedef struct Cuboid
 ///////////////////////////////////////////////////////////
 
 // 122 trees on the level	//////////////////////////////
-#include<vector>
-#include<queue>
-const int maxn = 300;
-typedef struct Node
-{
-	bool has_val;
-	Node *leftNode, *rightNode;
-	int value;
-
-}Node;
-
-bool addNode(Node *root ,int v, char *s)
-{
-	int n = strlen(s);
-	Node* curNode = root;
-	for (int i = 0; i < n; i++)		//i < n -1 ?
-	{
-		if (s[i] == 'L')
-		{
-			if (curNode->leftNode == NULL)
-			{
-				curNode->leftNode = (Node*)malloc(sizeof(Node));
-				curNode->leftNode->has_val = false;
-				curNode->leftNode->leftNode = NULL;
-				curNode->leftNode->rightNode = NULL;
-			}
-			curNode = curNode->leftNode;
-		}
-		else if (s[i] == 'R')
-		{
-			if (curNode->rightNode == NULL)
-			{
-				curNode->rightNode = (Node*)malloc(sizeof(Node));
-				curNode->rightNode->has_val = false;
-				curNode->rightNode->leftNode = NULL;
-				curNode->rightNode->rightNode = NULL;
-			}
-			curNode = curNode->rightNode;
-		}
-	}
-	if (curNode->has_val)
-		return false;
-	curNode->value = v;
-	curNode->has_val = true;
-	return true;
-}
-
-bool readInput(Node * &root)
-{
-	root = (Node*)malloc(sizeof(Node));
-	root->has_val = false;
-	root->leftNode = NULL;
-	root->rightNode = NULL;
-	char s[maxn];
-	while (scanf("%s", s) != EOF)
-	{
-		if (strcmp(s, "()") == 0)
-			return true;
-		char *start = strchr(s, ',') + 1;
-		int v;
-		sscanf(&s[1], "%d", &v);
-		if (!addNode(root, v, start))
-			return false;
-	}
-	return false;
-}
-
-bool bfs(Node *curNode,vector <int> &ans)
-{
-	queue <Node*> q;
-	if (!curNode->has_val)
-	{
-		return false;
-	}
-	q.push(curNode);
-	while (!q.empty())
-	{
-		Node *u = q.front();
-		q.pop();
-		if (u->leftNode != NULL)
-			q.push(u->leftNode);
-		if (u->rightNode != NULL)
-			q.push(u->rightNode);
-		if (!u->has_val)
-			return false;
-		ans.push_back(u->value);
-	}
-	return true;
-}
-
-int main()
-{
+//#include<vector>
+//#include<queue>
+//const int maxn = 300;
+//typedef struct Node
+//{
+//	bool has_val;
+//	Node *leftNode, *rightNode;
+//	int value;
+//
+//}Node;
+//
+//bool addNode(Node *root ,int v, char *s)
+//{
+//	int n = strlen(s);
+//	Node* curNode = root;
+//	for (int i = 0; i < n; i++)		//i < n -1 ?
+//	{
+//		if (s[i] == 'L')
+//		{
+//			if (curNode->leftNode == NULL)
+//			{
+//				curNode->leftNode = (Node*)malloc(sizeof(Node));
+//				curNode->leftNode->has_val = false;
+//				curNode->leftNode->leftNode = NULL;
+//				curNode->leftNode->rightNode = NULL;
+//			}
+//			curNode = curNode->leftNode;
+//		}
+//		else if (s[i] == 'R')
+//		{
+//			if (curNode->rightNode == NULL)
+//			{
+//				curNode->rightNode = (Node*)malloc(sizeof(Node));
+//				curNode->rightNode->has_val = false;
+//				curNode->rightNode->leftNode = NULL;
+//				curNode->rightNode->rightNode = NULL;
+//			}
+//			curNode = curNode->rightNode;
+//		}
+//	}
+//	if (curNode->has_val)
+//		return false;
+//	curNode->value = v;
+//	curNode->has_val = true;
+//	return true;
+//}
+//
+//void remove_tree(Node* u)
+//{
+//	if (u == NULL)	return;
+//	remove_tree(u->leftNode);
+//	remove_tree(u->rightNode);
+//	free(u);
+//}
+//
+//bool readInput(Node * &root)
+//{
+//	remove_tree(root);
+//	root = (Node*)malloc(sizeof(Node));
+//	root->has_val = false;
+//	root->leftNode = NULL;
+//	root->rightNode = NULL;
+//	char s[maxn];
+//	while (scanf("%s", s) != EOF)
+//	{
+//		if (strcmp(s, "()") == 0)
+//			return true;
+//		char *start = strchr(s, ',') + 1;
+//		int v;
+//		sscanf(&s[1], "%d", &v);
+//		if (!addNode(root, v, start))
+//			return false;
+//	}
+//	return false;
+//}
+//
+//bool bfs(Node *curNode,vector <int> &ans)
+//{
+//	queue <Node*> q;
+//	if (!curNode->has_val)
+//	{
+//		return false;
+//	}
+//	q.push(curNode);
+//	while (!q.empty())
+//	{
+//		Node *u = q.front();
+//		q.pop();
+//		if (u->leftNode != NULL)
+//			q.push(u->leftNode);
+//		if (u->rightNode != NULL)
+//			q.push(u->rightNode);
+//		if (!u->has_val)
+//			return false;
+//		ans.push_back(u->value);
+//	}
+//	return true;
+//}
+//
+//int main()
+//{
 //#ifdef DEBUG
 //	freopen("trees_on_the_level.in", "r", stdin);
 //	freopen("trees_on_the_level.out", "w", stdout);
 //#endif // DEBUG
-	Node* root;
-	while (readInput(root))
-	{
-		vector <int> ans;
-		if (!bfs(root, ans))
-			printf("not complete\n");
-		else
-		{
-			for (int i = 0; i < ans.size(); i++)
-				printf("%d ", ans[i]);
-			printf("\n");
-		}
-	}
-	return 0;
-}
+//	Node* root = NULL;
+//	while (readInput(root))
+//	{
+//		vector <int> ans;
+//		if (!bfs(root, ans))
+//			printf("not complete\n");
+//		else
+//		{
+//			for (int i = 0; i < ans.size(); i++)
+//				printf("%d ", ans[i]);
+//			printf("\n");
+//		}
+//	}
+//	return 0;
+//}
 
 //////////////////////////////////////////////////////////
 
@@ -1377,4 +1386,113 @@ int main()
 //	return 0;
 //}
 
+//////////////////////////////////////////////////////////
+
+//not skilled
+////	548 tree	//////////////////////////////////////////
+//#include <string>
+//#include <sstream>
+//#include <algorithm>
+//
+////global vars
+//const int maxn = 10000 + 10;
+//int in_order[maxn], post_order[maxn], lNode[maxn], rNode[maxn];
+//
+//int best, best_sum = 1000000;
+//int n;	//n nodes
+//
+//bool readInput(int *tree)
+//{
+//	string line;
+//	if (!getline(cin, line))
+//		return false;		//EOF
+//	stringstream ss(line);
+//	n = 0;
+//	int x;
+//	while (ss >> x)
+//		tree[n++] = x;
+//	return n > 0;
+//}
+//
+//int buildTree(int Lin, int Rin, int Lpost, int Rpost)
+//{
+//	if (Lin > Rin)
+//		return 0;	//no child
+//	int root = post_order[Rpost];
+//	int p = Lin;
+//	while (in_order[p] != root)
+//		p++;
+//
+//	int cnt = p - Lin;	//left nodes cnt
+//	lNode[root] = buildTree(Lin, p - 1, Lpost, Lpost + cnt - 1);
+//	rNode[root] = buildTree(p + 1, Rin, Lpost + cnt, Rpost - 1);
+//	return root;
+//}
+//
+//void dfs(int u, int sum)
+//{
+//	sum += u;
+//	if (lNode[u] == 0 && rNode[u] == 0)		//bottom
+//	{
+//		if (sum < best_sum || (sum == best_sum && u < best))
+//		{
+//			best_sum = sum;
+//			best = u;
+//		}
+//	}
+//
+//	if(lNode[u])	dfs(lNode[u], sum);
+//	if(rNode[u])	dfs(rNode[u], sum);
+//}
+//
+//int main()
+//{
+//#ifdef DEBUG
+//	freopen("tree.in", "r", stdin);
+//	//freopen("trees_on_the_level.out", "w", stdout);
+//#endif // DEBUG
+//	while (readInput(in_order))
+//	{
+//		if (!readInput(post_order))
+//			break;
+//		int root = buildTree(0, n - 1, 0, n - 1);
+//		dfs(root, 0);
+//		cout << best << endl;
+//	}
+//	return 0;
+//}
+//////////////////////////////////////////////////////////
+
+////	839 not as mobile	//////////////////////////////
+#include <iostream>
+bool solve(int &W)
+{
+	int W1, D1, W2, D2;
+	cin >> W1 >> D1 >> W2 >> D2;
+	bool b1 = true, b2 = true;
+
+	if (!W1) b1 = solve(W1);
+	if (!W2)	b2 = solve(W2);
+
+	W = W1 + W2;
+	return b1 && b2 && (W1 * D1 == W2 * D2);
+}
+
+int main()
+{
+	int T, W;
+	cin >> T;
+	while (T--)
+	{
+		if (solve(W))
+		{
+			cout << "Yes" << endl;
+		}
+		else
+		{
+			cout << "No" << endl;
+		}
+	}
+	return 1;
+}
 //////////////////////////////////////////////////////////
