@@ -18,6 +18,19 @@ using namespace std;
 
 #define DEBUG
 
+typedef struct
+{
+	unsigned short  width;
+	unsigned short  height;
+} IMG_SIZE;
+typedef struct
+{
+	unsigned char  *ptr;      /* pointer to the image buffer start address */
+	IMG_SIZE  size;
+	unsigned short linestep;  /* offset from one row of image buffer to
+						 another on the same column in term of pixel */
+} IMG_UBBUF;
+
 //chessBoard 10*9
 #define HEIGHT 12
 #define WIDTH 11
@@ -1464,35 +1477,297 @@ typedef struct Cuboid
 //////////////////////////////////////////////////////////
 
 ////	839 not as mobile	//////////////////////////////
-#include <iostream>
-bool solve(int &W)
+//#include <iostream>
+//bool solve(int &W)
+//{
+//	int W1, D1, W2, D2;
+//	cin >> W1 >> D1 >> W2 >> D2;
+//	bool b1 = true, b2 = true;
+//
+//	if (!W1) b1 = solve(W1);
+//	if (!W2)	b2 = solve(W2);
+//
+//	W = W1 + W2;
+//	return b1 && b2 && (W1 * D1 == W2 * D2);
+//}
+//
+//int main()
+//{
+//	int T, W;
+//	cin >> T;
+//	while (T--)
+//	{
+//		if (solve(W))
+//		{
+//			cout << "Yes" << endl;
+//		}
+//		else
+//		{
+//			cout << "No" << endl;
+//		}
+//	}
+//	return 1;
+//}
+//////////////////////////////////////////////////////////
+
+//image related//
+////	297 quardTrees	//////////////////////////////////
+//int g_len = 32;	//square length
+//
+///* 
+//// buf , picture
+//// s , build tree command
+//// p , command position
+//// r , startRow 
+//// c , startCol
+//// w , draw width
+//// cnt 	,pixel count
+//*/
+//int draw(int *buf,char *s,int &p,int r,int c,int w, int &cnt)
+//{
+//	char ch = s[p++];
+//	if (ch == 'p')
+//	{
+//		draw(buf, s, p, r, c + w / 2, w / 2,cnt);	//rightTop,1
+//		draw(buf, s, p, r, c, w / 2, cnt);	//leftTop,2
+//		draw(buf, s, p, r + w/2, c, w / 2, cnt);	//leftBottom,3
+//		draw(buf, s, p, r + w/2, c+w/2, w / 2, cnt);	//rightBottom,4
+//	}
+//	else if(ch == 'f')
+//	{
+//		for (int i = r; i < r + w; i++)
+//		{
+//			for (int j = c; j < c + w; j++)
+//			{
+//				if (buf[i * g_len + j] == 0)
+//				{
+//					buf[i * g_len + j] = 1;
+//					cnt++;
+//				}
+//			}
+//		}
+//	}
+//	else if(ch == 'e')
+//
+//	return 0;
+//}	
+//
+//int main()
+//{
+//#ifdef DEBUG
+//	freopen("quardTrees.in", "r", stdin);
+//	freopen("test.out", "w", stdout);
+//#endif // DEBUG
+//	int T;
+//	cin >> T;
+//	while (T--)
+//	{
+//		int cnt = 0;	//pixel count
+//		int buf[1024];	//1024 (32*32) pixel
+//		memset(buf, 0, sizeof(int) * 1024);
+//		char sBuf[1024 * 2];			//1024 not enough
+//		for (int i = 0; i < 2; i++)
+//		{
+//			cin >> sBuf;
+//			int pos = 0;
+//			draw(buf,sBuf, pos, 0, 0, g_len,cnt);
+//		}
+//		cout << "There are " << cnt << " black pixels." << endl;
+//	}
+//	return 0;
+//}
+//////////////////////////////////////////////////////////
+
+//image related//
+//	1103 Ancient Messages	/////////////////////////////
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+#include<vector>
+#include<set>
+using namespace std;
+
+const int maxH = 200;
+const int maxW = 50;
+const int colorNumMax = 255;
+
+//4 connect region
+const int dr[4] = { -1,1,0,0 };
+const int dc[4] = { 0,0,-1,1 };
+
+
+int setBin(char bin[][5])
 {
-	int W1, D1, W2, D2;
-	cin >> W1 >> D1 >> W2 >> D2;
-	bool b1 = true, b2 = true;
-
-	if (!W1) b1 = solve(W1);
-	if (!W2)	b2 = solve(W2);
-
-	W = W1 + W2;
-	return b1 && b2 && (W1 * D1 == W2 * D2);
+	strcpy(bin['0'], "0000");
+	strcpy(bin['1'], "0001");
+	strcpy(bin['2'], "0010");
+	strcpy(bin['3'], "0011");
+	strcpy(bin['4'], "0100");
+	strcpy(bin['5'], "0101");
+	strcpy(bin['6'], "0110");
+	strcpy(bin['7'], "0111");
+	strcpy(bin['8'], "1000");
+	strcpy(bin['a'], "1001");
+	strcpy(bin['b'], "1010");
+	strcpy(bin['c'], "1011");
+	strcpy(bin['d'], "1101");
+	strcpy(bin['e'], "1110");
+	strcpy(bin['f'], "1111");
+	return 0;
 }
+
+int showPic(int *pic1,int *color2,int height,int width)
+{
+	unsigned char *imgData1 = new unsigned char[height * width];
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			if(pic1[i * width + j] == 1)
+				imgData1[i * width + j] = 0;
+			else
+				imgData1[i * width + j] = 1;
+		}
+	}
+
+	unsigned char *imgData2 = new unsigned char[height * width];
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			imgData2[i * width + j] = color2[i * width + j];
+		}
+	}
+
+	IMG_UBBUF img1 = { imgData1,{ width,height },width };
+	IMG_UBBUF img2 = { imgData2,{width,height},width };
+
+
+	return 0;
+}
+
+//4 connect block
+int pic_dfs(int *pic,int *color,int row,int col,int y,int x,int colorNum)
+{
+	int newY, newX;
+	for (int i = 0; i < 4; i++)
+	{
+		newY = y + dr[i];
+		newX = x + dc[i];
+		if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[y * col + x] == pic[newY * col + newX] && color[newY * col + newX] == 0)
+		{
+			color[newY * col + newX] = colorNum;
+			pic_dfs(pic, color, row, col, newY, newX, colorNum);
+		}
+	}
+	return 0;
+}
+
+
+
+int countHoles(int *pic,int *color, int *holesCount,int colorAllNum,int row,int col)
+{
+	int holes = 0;
+	vector <set <int> > neighbors;
+	neighbors.resize(colorAllNum + 1);
+	
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < col; j++)
+		{
+			if (pic[i * col + j] == 1)	//scan black point
+			{
+				for (int k = 0; k < 4; k++)
+				{
+					int newY, newX;
+					newY = i + dr[k];
+					newX = j + dc[k];
+					if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[newY * col + newX] == 0 && color[newY * col + newX] != 1) //not ouside white 
+					{
+						neighbors[color[i * col + j]].insert(color[newY * col + newX]);
+					}
+				}
+			}
+		}
+	}
+
+	for (int index = 0; index < colorAllNum + 1; index++)
+	{
+		holesCount[index] = neighbors[index].size();
+	}
+
+	return holes;
+}
+
+//char recognizeMessage()
 
 int main()
 {
-	int T, W;
-	cin >> T;
-	while (T--)
+#ifdef DEBUG
+	freopen("AncientMessages.in", "r", stdin);
+	//freopen("test.out", "w", stdout);
+#endif // DEBUG
+	char bin[256][5];
+	setBin(bin);
+	int height, width;
+	int kase = 0;
+	char lineBuf[maxW + 10];
+
+	while (scanf("%d%d", &height, &width) == 2 && height != 0)
 	{
-		if (solve(W))
+		int picWidth = width * 4;
+		int *pic = new int[height * picWidth];
+		int *color = new int[height * picWidth];
+		memset(pic, 0, sizeof(int) * height * picWidth);
+		memset(color, 0, sizeof(int) * height * picWidth);
+
+		//	read input and decode	//
+		for (int i = 0; i < height; i++)
 		{
-			cout << "Yes" << endl;
+			scanf("%s", lineBuf);
+			for (int j = 0; j < width; j++)
+			{
+				//decode 
+				pic[i * picWidth + j * 4 + 0] = bin[lineBuf[j]][0] - '0';
+				pic[i * picWidth + j * 4 + 1] = bin[lineBuf[j]][1] - '0';
+				pic[i * picWidth + j * 4 + 2] = bin[lineBuf[j]][2] - '0';
+				pic[i * picWidth + j * 4 + 3] = bin[lineBuf[j]][3] - '0';
+			}
 		}
-		else
+
+		//	dfs,find all connnect regions,paint different color	//
+		int colorNum = 1;
+		vector <int> blackRegionVec;
+		for (int i = 0; i < height; i++)
 		{
-			cout << "No" << endl;
+			for (int j = 0; j < picWidth; j++)
+			{
+				if (color[i * picWidth + j] == 0)
+				{
+					pic_dfs(pic, color, height, picWidth, i, j, colorNum++);
+					if (pic[i * picWidth + j] == 1)
+						blackRegionVec.push_back(colorNum - 1);
+				}
+			}
 		}
+		showPic(pic,color, height, picWidth);
+
+		//	count white holes in black region	//
+		int *holesCount = new int[colorNumMax + 10];		//save holes count
+		memset(holesCount, 0, sizeof(int) * (colorNumMax + 10));
+
+		countHoles(pic, color, holesCount, colorNumMax, height, picWidth);
+
+
+		//	recognize white region	//
+		//vector <>
+
+		//	free	//
+		delete[] holesCount;
+		delete[] color;
+		delete[] pic;
 	}
-	return 1;
+	return 0;
 }
-//////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////
