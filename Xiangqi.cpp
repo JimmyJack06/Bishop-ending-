@@ -1580,194 +1580,354 @@ typedef struct Cuboid
 
 //image related//
 //	1103 Ancient Messages	/////////////////////////////
-#include<cstdio>
-#include<cstring>
-#include<algorithm>
-#include<vector>
-#include<set>
-using namespace std;
-
-const int maxH = 200;
-const int maxW = 50;
-const int colorNumMax = 255;
-
-//4 connect region
-const int dr[4] = { -1,1,0,0 };
-const int dc[4] = { 0,0,-1,1 };
-
-
-int setBin(char bin[][5])
-{
-	strcpy(bin['0'], "0000");
-	strcpy(bin['1'], "0001");
-	strcpy(bin['2'], "0010");
-	strcpy(bin['3'], "0011");
-	strcpy(bin['4'], "0100");
-	strcpy(bin['5'], "0101");
-	strcpy(bin['6'], "0110");
-	strcpy(bin['7'], "0111");
-	strcpy(bin['8'], "1000");
-	strcpy(bin['a'], "1001");
-	strcpy(bin['b'], "1010");
-	strcpy(bin['c'], "1011");
-	strcpy(bin['d'], "1101");
-	strcpy(bin['e'], "1110");
-	strcpy(bin['f'], "1111");
-	return 0;
-}
-
-int showPic(int *pic1,int *color2,int height,int width)
-{
-	unsigned char *imgData1 = new unsigned char[height * width];
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			if(pic1[i * width + j] == 1)
-				imgData1[i * width + j] = 0;
-			else
-				imgData1[i * width + j] = 1;
-		}
-	}
-
-	unsigned char *imgData2 = new unsigned char[height * width];
-	for (int i = 0; i < height; i++)
-	{
-		for (int j = 0; j < width; j++)
-		{
-			imgData2[i * width + j] = color2[i * width + j];
-		}
-	}
-
-	IMG_UBBUF img1 = { imgData1,{ width,height },width };
-	IMG_UBBUF img2 = { imgData2,{width,height},width };
-
-
-	return 0;
-}
-
-//4 connect block
-int pic_dfs(int *pic,int *color,int row,int col,int y,int x,int colorNum)
-{
-	int newY, newX;
-	for (int i = 0; i < 4; i++)
-	{
-		newY = y + dr[i];
-		newX = x + dc[i];
-		if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[y * col + x] == pic[newY * col + newX] && color[newY * col + newX] == 0)
-		{
-			color[newY * col + newX] = colorNum;
-			pic_dfs(pic, color, row, col, newY, newX, colorNum);
-		}
-	}
-	return 0;
-}
-
-
-
-int countHoles(int *pic,int *color, int *holesCount,int colorAllNum,int row,int col)
-{
-	int holes = 0;
-	vector <set <int> > neighbors;
-	neighbors.resize(colorAllNum + 1);
-	
-	for (int i = 0; i < row; i++)
-	{
-		for (int j = 0; j < col; j++)
-		{
-			if (pic[i * col + j] == 1)	//scan black point
-			{
-				for (int k = 0; k < 4; k++)
-				{
-					int newY, newX;
-					newY = i + dr[k];
-					newX = j + dc[k];
-					if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[newY * col + newX] == 0 && color[newY * col + newX] != 1) //not ouside white 
-					{
-						neighbors[color[i * col + j]].insert(color[newY * col + newX]);
-					}
-				}
-			}
-		}
-	}
-
-	for (int index = 0; index < colorAllNum + 1; index++)
-	{
-		holesCount[index] = neighbors[index].size();
-	}
-
-	return holes;
-}
-
-//char recognizeMessage()
-
-int main()
-{
-#ifdef DEBUG
-	freopen("AncientMessages.in", "r", stdin);
-	//freopen("test.out", "w", stdout);
-#endif // DEBUG
-	char bin[256][5];
-	setBin(bin);
-	int height, width;
-	int kase = 0;
-	char lineBuf[maxW + 10];
-
-	while (scanf("%d%d", &height, &width) == 2 && height != 0)
-	{
-		int picWidth = width * 4;
-		int *pic = new int[height * picWidth];
-		int *color = new int[height * picWidth];
-		memset(pic, 0, sizeof(int) * height * picWidth);
-		memset(color, 0, sizeof(int) * height * picWidth);
-
-		//	read input and decode	//
-		for (int i = 0; i < height; i++)
-		{
-			scanf("%s", lineBuf);
-			for (int j = 0; j < width; j++)
-			{
-				//decode 
-				pic[i * picWidth + j * 4 + 0] = bin[lineBuf[j]][0] - '0';
-				pic[i * picWidth + j * 4 + 1] = bin[lineBuf[j]][1] - '0';
-				pic[i * picWidth + j * 4 + 2] = bin[lineBuf[j]][2] - '0';
-				pic[i * picWidth + j * 4 + 3] = bin[lineBuf[j]][3] - '0';
-			}
-		}
-
-		//	dfs,find all connnect regions,paint different color	//
-		int colorNum = 1;
-		vector <int> blackRegionVec;
-		for (int i = 0; i < height; i++)
-		{
-			for (int j = 0; j < picWidth; j++)
-			{
-				if (color[i * picWidth + j] == 0)
-				{
-					pic_dfs(pic, color, height, picWidth, i, j, colorNum++);
-					if (pic[i * picWidth + j] == 1)
-						blackRegionVec.push_back(colorNum - 1);
-				}
-			}
-		}
-		showPic(pic,color, height, picWidth);
-
-		//	count white holes in black region	//
-		int *holesCount = new int[colorNumMax + 10];		//save holes count
-		memset(holesCount, 0, sizeof(int) * (colorNumMax + 10));
-
-		countHoles(pic, color, holesCount, colorNumMax, height, picWidth);
-
-
-		//	recognize white region	//
-		//vector <>
-
-		//	free	//
-		delete[] holesCount;
-		delete[] color;
-		delete[] pic;
-	}
-	return 0;
-}
+//#include<cstdio>
+//#include<cstring>
+//#include<algorithm>
+//#include<vector>
+//#include<set>
+//using namespace std;
+//
+//const int maxH = 200;
+//const int maxW = 50;
+//const int colorNumMax = 255;
+//
+////4 connect region
+//const int dr[4] = { -1,1,0,0 };
+//const int dc[4] = { 0,0,-1,1 };
+//
+//
+//int setBin(char bin[][5])
+//{
+//	strcpy(bin['0'], "0000");
+//	strcpy(bin['1'], "0001");
+//	strcpy(bin['2'], "0010");
+//	strcpy(bin['3'], "0011");
+//	strcpy(bin['4'], "0100");
+//	strcpy(bin['5'], "0101");
+//	strcpy(bin['6'], "0110");
+//	strcpy(bin['7'], "0111");
+//	strcpy(bin['8'], "1000");
+//	strcpy(bin['a'], "1001");
+//	strcpy(bin['b'], "1010");
+//	strcpy(bin['c'], "1011");
+//	strcpy(bin['d'], "1101");
+//	strcpy(bin['e'], "1110");
+//	strcpy(bin['f'], "1111");
+//	return 0;
+//}
+//
+//int showPic(int *pic1,int *color2,int height,int width)
+//{
+//	unsigned char *imgData1 = new unsigned char[height * width];
+//	for (int i = 0; i < height; i++)
+//	{
+//		for (int j = 0; j < width; j++)
+//		{
+//			if(pic1[i * width + j] == 1)
+//				imgData1[i * width + j] = 0;
+//			else
+//				imgData1[i * width + j] = 1;
+//		}
+//	}
+//
+//	unsigned char *imgData2 = new unsigned char[height * width];
+//	for (int i = 0; i < height; i++)
+//	{
+//		for (int j = 0; j < width; j++)
+//		{
+//			imgData2[i * width + j] = color2[i * width + j];
+//		}
+//	}
+//
+//	IMG_UBBUF img1 = { imgData1,{ width,height },width };
+//	IMG_UBBUF img2 = { imgData2,{width,height},width };
+//
+//
+//	return 0;
+//}
+//
+////4 connect block
+//int pic_dfs(int *pic,int *color,int row,int col,int y,int x,int colorNum)
+//{
+//	int newY, newX;
+//	for (int i = 0; i < 4; i++)
+//	{
+//		newY = y + dr[i];
+//		newX = x + dc[i];
+//		if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[y * col + x] == pic[newY * col + newX] && color[newY * col + newX] == 0)
+//		{
+//			color[newY * col + newX] = colorNum;
+//			pic_dfs(pic, color, row, col, newY, newX, colorNum);
+//		}
+//	}
+//	return 0;
+//}
+//
+//
+//
+//int countHoles(int *pic,int *color, int *holesCount,int colorAllNum,int row,int col)
+//{
+//	int holes = 0;
+//	vector <set <int> > neighbors;
+//	neighbors.resize(colorAllNum + 1);
+//	
+//	for (int i = 0; i < row; i++)
+//	{
+//		for (int j = 0; j < col; j++)
+//		{
+//			if (pic[i * col + j] == 1)	//scan black point
+//			{
+//				for (int k = 0; k < 4; k++)
+//				{
+//					int newY, newX;
+//					newY = i + dr[k];
+//					newX = j + dc[k];
+//					if (newY >= 0 && newY < row && newX >= 0 && newX < col && pic[newY * col + newX] == 0 && color[newY * col + newX] != 1) //not ouside white 
+//					{
+//						neighbors[color[i * col + j]].insert(color[newY * col + newX]);
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	for (int index = 0; index < colorAllNum + 1; index++)
+//	{
+//		holesCount[index] = neighbors[index].size();
+//	}
+//
+//	return holes;
+//}
+//
+////char recognizeMessage()
+//
+//int main()
+//{
+//#ifdef DEBUG
+//	freopen("AncientMessages.in", "r", stdin);
+//	//freopen("test.out", "w", stdout);
+//#endif // DEBUG
+//	char bin[256][5];
+//	setBin(bin);
+//	int height, width;
+//	int kase = 0;
+//	char lineBuf[maxW + 10];
+//
+//	while (scanf("%d%d", &height, &width) == 2 && height != 0)
+//	{
+//		int picWidth = width * 4;
+//		int *pic = new int[height * picWidth];
+//		int *color = new int[height * picWidth];
+//		memset(pic, 0, sizeof(int) * height * picWidth);
+//		memset(color, 0, sizeof(int) * height * picWidth);
+//
+//		//	read input and decode	//
+//		for (int i = 0; i < height; i++)
+//		{
+//			scanf("%s", lineBuf);
+//			for (int j = 0; j < width; j++)
+//			{
+//				//decode 
+//				pic[i * picWidth + j * 4 + 0] = bin[lineBuf[j]][0] - '0';
+//				pic[i * picWidth + j * 4 + 1] = bin[lineBuf[j]][1] - '0';
+//				pic[i * picWidth + j * 4 + 2] = bin[lineBuf[j]][2] - '0';
+//				pic[i * picWidth + j * 4 + 3] = bin[lineBuf[j]][3] - '0';
+//			}
+//		}
+//
+//		//	dfs,find all connnect regions,paint different color	//
+//		int colorNum = 1;
+//		vector <int> blackRegionVec;
+//		for (int i = 0; i < height; i++)
+//		{
+//			for (int j = 0; j < picWidth; j++)
+//			{
+//				if (color[i * picWidth + j] == 0)
+//				{
+//					pic_dfs(pic, color, height, picWidth, i, j, colorNum++);
+//					if (pic[i * picWidth + j] == 1)
+//						blackRegionVec.push_back(colorNum - 1);
+//				}
+//			}
+//		}
+//		showPic(pic,color, height, picWidth);
+//
+//		//	count white holes in black region	//
+//		int *holesCount = new int[colorNumMax + 10];		//save holes count
+//		memset(holesCount, 0, sizeof(int) * (colorNumMax + 10));
+//
+//		countHoles(pic, color, holesCount, colorNumMax, height, picWidth);
+//
+//
+//		//	recognize white region	//
+//		//vector <>
+//
+//		//	free	//
+//		delete[] holesCount;
+//		delete[] color;
+//		delete[] pic;
+//	}
+//	return 0;
+//}
 
 /////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////
+// UVa816 Abbott's Revenge
+#include<cstdio>
+#include<cstring>
+#include<vector>
+#include<queue>
+using namespace std;
+
+typedef struct tagNode
+{
+	int r;
+	int c;
+	int dir;
+	tagNode(int _r = 0, int _c = 0, int _dir = 0) :r(_r), c(_c), dir(_dir) {}
+}Node;
+
+const int maxdim = 9;
+const char *dirs = "NESW";
+const char *turns = "FLR";
+
+const int dr[4] = { -1,0,1,0 };
+const int dc[4] = { 0,1,0,-1 };
+
+int rStart, cStart, rEnd, cEnd, dirID, r1, c1;
+int has_edge[maxdim][maxdim][4][3];
+Node parent[maxdim][maxdim][4];
+int dis[maxdim][maxdim][4];
+
+int Dir_id(char str)
+{
+	return (strchr(dirs, str) - dirs);
+}
+
+int Turn_id(char str)
+{
+	return (strchr(turns, str) - turns);
+}
+
+bool Read_case()
+{
+	char sName[99], sDir[5];
+	if (scanf("%s%d%d%s%d%d", sName, &rStart, &cStart, sDir, &rEnd, &cEnd) != 6)
+		return false;
+	printf("%s\n", sName);
+
+	dirID = Dir_id(sDir[0]);
+	r1 = rStart + dr[dirID];
+	c1 = cStart + dc[dirID];
+
+	char str[99];
+	memset(has_edge, 0, sizeof(has_edge));
+	for (;;)
+	{
+		int r, c;
+		scanf("%d", &r);
+		if (r == 0)	break;
+		scanf("%d", &c);
+		if (r > maxdim || c > maxdim)
+		{
+			printf("out of range\n");
+			return false;
+		}
+		while (scanf("%s", str) == 1 && str[0] != '*')
+		{
+			for (int i = 1; i < strlen(str); i++)
+			{
+				int _dir = Dir_id(str[0]);
+				int _turn = Turn_id(str[i]);
+				has_edge[r][c][_dir][_turn] = 1;
+			}
+		}
+	}
+
+	return true;
+}
+
+
+void Printf_ans(Node &u)
+{
+	vector<Node> ansVec;
+	ansVec.push_back(u);
+	while (dis[u.r][u.c][u.dir] != 0)
+	{
+		u = parent[u.r][u.c][u.dir];
+		ansVec.push_back(u);
+	}
+	
+	printf("( %d , %d )\n", rStart, cStart);
+	for (int i = ansVec.size() - 1; i >= 0; i--)
+	{
+		printf("( %d , %d )\n", ansVec[i].r, ansVec[i].c);
+	}
+}
+
+Node Walk(const Node &u,int turn)
+{
+	int dir = u.dir;
+	if (turn == 2)
+	{
+		dir = (dir + 1) % 4;
+	}
+	if (turn == 1)
+	{
+		dir = (dir + 4 - 1) % 4;
+	}
+	return Node(u.r + dr[dir], u.c + dc[dir], dir);
+} 
+
+
+bool inside(int r,int c)
+{
+	if (r > maxdim || r < 1 || c > maxdim || c < 1)
+		return false;
+	else
+		return true;
+}
+
+void Solve()
+{
+	queue<Node> que;
+	memset(dis, -1, sizeof(dis));
+	Node u(r1, c1, dirID);		//init point 
+	dis[r1][c1][dirID] = 0;
+	
+	que.push(u);
+	while (!que.empty())
+	{
+		u = que.front();
+		que.pop();
+		if (u.r == rEnd && u.c == cEnd)
+		{
+			Printf_ans(u);
+			return;
+		}
+		for (int i = 0; i < 3; i++)		//3 turns
+		{
+			Node v = Walk(u, i);
+			if (has_edge[u.r][u.c][u.dir][i] && inside(v.r, v.c) && dis[v.r][v.c][v.dir] < 0)		//never been visited
+			{
+				dis[v.r][v.c][v.dir] = dis[u.r][u.c][u.dir] + 1;
+				parent[v.r][v.c][v.dir] = u;
+				que.push(v);
+			}
+		}
+	}
+	
+	printf("No Solution Possible\n");
+}
+
+int main() {
+#ifdef DEBUG
+	freopen("uva816.txt", "r", stdin);
+#endif // DEBUG
+	while (Read_case()) {
+		Solve();
+	}
+	return 0;
+}
+//////////////////////////////////////////////////////////////////////////
