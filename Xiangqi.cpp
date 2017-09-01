@@ -1774,160 +1774,238 @@ typedef struct Cuboid
 
 ////////////////////////////////////////////////////////////////
 // UVa816 Abbott's Revenge
+//#include<cstdio>
+//#include<cstring>
+//#include<vector>
+//#include<queue>
+//using namespace std;
+//
+//typedef struct tagNode
+//{
+//	int r;
+//	int c;
+//	int dir;
+//	tagNode(int _r = 0, int _c = 0, int _dir = 0) :r(_r), c(_c), dir(_dir) {}
+//}Node;
+//
+//const int maxdim = 9;
+//const char *dirs = "NESW";
+//const char *turns = "FLR";
+//
+//const int dr[4] = { -1,0,1,0 };
+//const int dc[4] = { 0,1,0,-1 };
+//
+//int rStart, cStart, rEnd, cEnd, dirID, r1, c1;
+//int has_edge[maxdim][maxdim][4][3];
+//Node parent[maxdim][maxdim][4];
+//int dis[maxdim][maxdim][4];
+//
+//int Dir_id(char str)
+//{
+//	return (strchr(dirs, str) - dirs);
+//}
+//
+//int Turn_id(char str)
+//{
+//	return (strchr(turns, str) - turns);
+//}
+//
+//bool Read_case()
+//{
+//	char sName[99], sDir[5];
+//	if (scanf("%s%d%d%s%d%d", sName, &rStart, &cStart, sDir, &rEnd, &cEnd) != 6)
+//		return false;
+//	printf("%s\n", sName);
+//
+//	dirID = Dir_id(sDir[0]);
+//	r1 = rStart + dr[dirID];
+//	c1 = cStart + dc[dirID];
+//
+//	char str[99];
+//	memset(has_edge, 0, sizeof(has_edge));
+//	for (;;)
+//	{
+//		int r, c;
+//		scanf("%d", &r);
+//		if (r == 0)	break;
+//		scanf("%d", &c);
+//		if (r > maxdim || c > maxdim)
+//		{
+//			printf("out of range\n");
+//			return false;
+//		}
+//		while (scanf("%s", str) == 1 && str[0] != '*')
+//		{
+//			for (int i = 1; i < strlen(str); i++)
+//			{
+//				int _dir = Dir_id(str[0]);
+//				int _turn = Turn_id(str[i]);
+//				has_edge[r][c][_dir][_turn] = 1;
+//			}
+//		}
+//	}
+//
+//	return true;
+//}
+//
+//
+//void Printf_ans(Node &u)
+//{
+//	vector<Node> ansVec;
+//	ansVec.push_back(u);
+//	while (dis[u.r][u.c][u.dir] != 0)
+//	{
+//		u = parent[u.r][u.c][u.dir];
+//		ansVec.push_back(u);
+//	}
+//	
+//	printf("( %d , %d )\n", rStart, cStart);
+//	for (int i = ansVec.size() - 1; i >= 0; i--)
+//	{
+//		printf("( %d , %d )\n", ansVec[i].r, ansVec[i].c);
+//	}
+//}
+//
+//Node Walk(const Node &u,int turn)
+//{
+//	int dir = u.dir;
+//	if (turn == 2)
+//	{
+//		dir = (dir + 1) % 4;
+//	}
+//	if (turn == 1)
+//	{
+//		dir = (dir + 4 - 1) % 4;
+//	}
+//	return Node(u.r + dr[dir], u.c + dc[dir], dir);
+//} 
+//
+//
+//bool inside(int r,int c)
+//{
+//	if (r > maxdim || r < 1 || c > maxdim || c < 1)
+//		return false;
+//	else
+//		return true;
+//}
+//
+//void Solve()
+//{
+//	queue<Node> que;
+//	memset(dis, -1, sizeof(dis));
+//	Node u(r1, c1, dirID);		//init point 
+//	dis[r1][c1][dirID] = 0;
+//	
+//	que.push(u);
+//	while (!que.empty())
+//	{
+//		u = que.front();
+//		que.pop();
+//		if (u.r == rEnd && u.c == cEnd)
+//		{
+//			Printf_ans(u);
+//			return;
+//		}
+//		for (int i = 0; i < 3; i++)		//3 turns
+//		{
+//			Node v = Walk(u, i);
+//			if (has_edge[u.r][u.c][u.dir][i] && inside(v.r, v.c) && dis[v.r][v.c][v.dir] < 0)		//never been visited
+//			{
+//				dis[v.r][v.c][v.dir] = dis[u.r][u.c][u.dir] + 1;
+//				parent[v.r][v.c][v.dir] = u;
+//				que.push(v);
+//			}
+//		}
+//	}
+//	
+//	printf("No Solution Possible\n");
+//}
+//
+//int main() {
+//#ifdef DEBUG
+//	freopen("uva816.txt", "r", stdin);
+//#endif // DEBUG
+//	while (Read_case()) {
+//		Solve();
+//	}
+//	return 0;
+//}
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+//topo sort 
 #include<cstdio>
 #include<cstring>
-#include<vector>
-#include<queue>
-using namespace std;
+const int maxn = 100;
 
-typedef struct tagNode
+int state[maxn], Grid[maxn][maxn], topo[maxn],temp;
+int n, m;		//n nums,m conditions.
+
+bool dfs(int u)
 {
-	int r;
-	int c;
-	int dir;
-	tagNode(int _r = 0, int _c = 0, int _dir = 0) :r(_r), c(_c), dir(_dir) {}
-}Node;
-
-const int maxdim = 9;
-const char *dirs = "NESW";
-const char *turns = "FLR";
-
-const int dr[4] = { -1,0,1,0 };
-const int dc[4] = { 0,1,0,-1 };
-
-int rStart, cStart, rEnd, cEnd, dirID, r1, c1;
-int has_edge[maxdim][maxdim][4][3];
-Node parent[maxdim][maxdim][4];
-int dis[maxdim][maxdim][4];
-
-int Dir_id(char str)
-{
-	return (strchr(dirs, str) - dirs);
-}
-
-int Turn_id(char str)
-{
-	return (strchr(turns, str) - turns);
-}
-
-bool Read_case()
-{
-	char sName[99], sDir[5];
-	if (scanf("%s%d%d%s%d%d", sName, &rStart, &cStart, sDir, &rEnd, &cEnd) != 6)
-		return false;
-	printf("%s\n", sName);
-
-	dirID = Dir_id(sDir[0]);
-	r1 = rStart + dr[dirID];
-	c1 = cStart + dc[dirID];
-
-	char str[99];
-	memset(has_edge, 0, sizeof(has_edge));
-	for (;;)
+	
+	state[u] = -1;
+	for (int v = 0; v < n; v++)
 	{
-		int r, c;
-		scanf("%d", &r);
-		if (r == 0)	break;
-		scanf("%d", &c);
-		if (r > maxdim || c > maxdim)
+		if (Grid[u][v])
 		{
-			printf("out of range\n");
-			return false;
+			if (state[v] < 0)		//存在回路
+				return false;
+			else if (!state[v])
+				dfs(v);
 		}
-		while (scanf("%s", str) == 1 && str[0] != '*')
+	}
+	state[u] = 1;
+	topo[--temp] = u;
+	return true;
+}
+
+bool TopoSort()
+{
+	temp = n;
+	memset(state,0,sizeof(state));
+	for (int i = 0; i < n; i++)
+	{
+		if (!state[i])
 		{
-			for (int i = 1; i < strlen(str); i++)
+			if (!dfs(i))
 			{
-				int _dir = Dir_id(str[0]);
-				int _turn = Turn_id(str[i]);
-				has_edge[r][c][_dir][_turn] = 1;
+				return false;
 			}
 		}
 	}
-
 	return true;
 }
 
 
-void Printf_ans(Node &u)
+int main()
 {
-	vector<Node> ansVec;
-	ansVec.push_back(u);
-	while (dis[u.r][u.c][u.dir] != 0)
+	while (scanf("%d %d",&n,&m) == 2 && n != 0)
 	{
-		u = parent[u.r][u.c][u.dir];
-		ansVec.push_back(u);
-	}
-	
-	printf("( %d , %d )\n", rStart, cStart);
-	for (int i = ansVec.size() - 1; i >= 0; i--)
-	{
-		printf("( %d , %d )\n", ansVec[i].r, ansVec[i].c);
-	}
-}
-
-Node Walk(const Node &u,int turn)
-{
-	int dir = u.dir;
-	if (turn == 2)
-	{
-		dir = (dir + 1) % 4;
-	}
-	if (turn == 1)
-	{
-		dir = (dir + 4 - 1) % 4;
-	}
-	return Node(u.r + dr[dir], u.c + dc[dir], dir);
-} 
-
-
-bool inside(int r,int c)
-{
-	if (r > maxdim || r < 1 || c > maxdim || c < 1)
-		return false;
-	else
-		return true;
-}
-
-void Solve()
-{
-	queue<Node> que;
-	memset(dis, -1, sizeof(dis));
-	Node u(r1, c1, dirID);		//init point 
-	dis[r1][c1][dirID] = 0;
-	
-	que.push(u);
-	while (!que.empty())
-	{
-		u = que.front();
-		que.pop();
-		if (u.r == rEnd && u.c == cEnd)
+		memset(Grid, 0, sizeof(Grid));
+		int u, v;
+		for (int i = 0; i < n; i++)
 		{
-			Printf_ans(u);
-			return;
+			scanf("%d %d", &u, &v);
+			u--;
+			v--;
+			Grid[u][v] = 1;
 		}
-		for (int i = 0; i < 3; i++)		//3 turns
+		if (TopoSort())
 		{
-			Node v = Walk(u, i);
-			if (has_edge[u.r][u.c][u.dir][i] && inside(v.r, v.c) && dis[v.r][v.c][v.dir] < 0)		//never been visited
+			for (int i = 0; i < n - 1; i++)
 			{
-				dis[v.r][v.c][v.dir] = dis[u.r][u.c][u.dir] + 1;
-				parent[v.r][v.c][v.dir] = u;
-				que.push(v);
+				printf("%d, ", topo[i] + 1);
 			}
+			printf("%d \n", topo[n - 1] + 1);
 		}
-	}
-	
-	printf("No Solution Possible\n");
-}
-
-int main() {
-#ifdef DEBUG
-	freopen("uva816.txt", "r", stdin);
-#endif // DEBUG
-	while (Read_case()) {
-		Solve();
+		else
+		{
+			printf("no solution\n");
+		}
 	}
 	return 0;
 }
+
 //////////////////////////////////////////////////////////////////////////
